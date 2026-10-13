@@ -2,6 +2,7 @@
 from collections import deque
 import heapq
 
+
 # Grafo del terreno marciano representado mediante lista de adyacencia.
 mapa = {
     "A": ["B", "F"],
@@ -32,8 +33,68 @@ muestras = [
     {"id": "M005", "zona": "F", "tipo": "Hielo", "interes": 90},
     {"id": "M006", "zona": "A", "tipo": "Sedimento", "interes": 35},
     {"id": "M007", "zona": "B", "tipo": "Mineral", "interes": 76},
-    {"id": "M008", "zona": "D", "tipo": "Hielo", "interes": 88}
+    {"id": "M008", "zona": "D", "tipo": "Hielo", "interes": 88},
+    {"id": "M009", "zona": "C", "tipo": "Mineral", "interes": 55}
 ]
+
+
+# Nodo del arbol binario de busqueda.
+class Nodo:
+    def __init__(self, muestra):
+        self.muestra = muestra
+        self.izquierda = None
+        self.derecha = None
+
+
+def insertar_en_arbol(raiz, muestra):
+    if raiz is None:
+        return Nodo(muestra)
+
+    if muestra["id"] < raiz.muestra["id"]:
+        raiz.izquierda = insertar_en_arbol(raiz.izquierda, muestra)
+    elif muestra["id"] > raiz.muestra["id"]:
+        raiz.derecha = insertar_en_arbol(raiz.derecha, muestra)
+
+    return raiz
+
+
+def buscar_en_arbol(raiz, id_buscado):
+    comparaciones = 0
+    actual = raiz
+
+    while actual is not None:
+        comparaciones += 1
+
+        if actual.muestra["id"] == id_buscado:
+            return actual.muestra, comparaciones
+        elif id_buscado < actual.muestra["id"]:
+            actual = actual.izquierda
+        else:
+            actual = actual.derecha
+
+    return None, comparaciones
+
+
+def construir_arbol():
+    # Este orden de insercion permite crear ramas a izquierda y derecha.
+    orden_ids = [
+        "M005", "M003", "M007", "M002", "M004",
+        "M006", "M008", "M001", "M009"
+    ]
+
+    raiz = None
+
+    for id_muestra in orden_ids:
+        for muestra in muestras:
+            if muestra["id"] == id_muestra:
+                raiz = insertar_en_arbol(raiz, muestra)
+                break
+
+    return raiz
+
+
+# El arbol se construye automaticamente al iniciar el programa.
+arbol_muestras = construir_arbol()
 
 
 def mostrar_mapa():
@@ -406,6 +467,14 @@ def buscar_muestra_binaria_menu():
     mostrar_resultado_busqueda(resultado, comparaciones)
 
 
+def buscar_muestra_arbol():
+    print("\n--- BUSQUEDA EN ARBOL BINARIO ---")
+    id_buscado = input("Ingrese el identificador (ej. M005): ").strip().upper()
+
+    resultado, comparaciones = buscar_en_arbol(arbol_muestras, id_buscado)
+    mostrar_resultado_busqueda(resultado, comparaciones)
+
+
 def ordenar_muestras_por_interes():
     print("\n--- MUESTRAS ORDENADAS POR INTERES CIENTIFICO ---")
 
@@ -430,6 +499,7 @@ def gestionar_muestras():
         print("2. Buscar muestra por ID (secuencial)")
         print("3. Ordenar por interes cientifico")
         print("4. Buscar muestra por ID (binaria)")
+        print("5. Buscar muestra por ID (arbol binario)")
         print("0. Volver al menu principal")
 
         opcion = input("Seleccione una opcion: ")
@@ -442,6 +512,8 @@ def gestionar_muestras():
             ordenar_muestras_por_interes()
         elif opcion == "4":
             buscar_muestra_binaria_menu()
+        elif opcion == "5":
+            buscar_muestra_arbol()
         elif opcion == "0":
             break
         else:
